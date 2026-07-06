@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حِمى | تطبيق الأمان الرقمي للفتيات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@550&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FDF8F5;
+    --bg-soft: #F5E6E1;
+    --card: #FFFFFF;
+    --ink: #3A2F2F;
+    --ink-dim: #7A6865;
+    --rose: #D16B7B;
+    --rose-light: #F3CCD2;
+    --lav: #8A6FA5;
+    --lav-light: #E2D9EC;
+    --coral: #E37B62;
+    --sage: #6B945E;
+    --line: rgba(58,47,47,0.1);
+  }
+  
+  * { box-sizing: border-box; font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  body { margin: 0; background: #ECE0DB; color: var(--ink); line-height: 1.6; }
+  h1, h2, h3 { font-family: 'Aref Ruqaa', serif; font-weight: 700; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* هيكل التطبيق كأنه هاتف ذكي */
+  .app { 
+    max-width: 450px; margin: 20px auto; min-height: 90vh; 
+    background: var(--bg); position: relative; display: flex; 
+    flex-direction: column; border-radius: 30px; overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15); border: 4px solid #3A2F2F;
+  }
+  @media(max-width: 480px) { .app { margin: 0; border-radius: 0; border: none; min-height: 100vh; } }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: center;
+    padding: 15px; position: sticky; top: 0; z-index: 30;
+    background: rgba(253,248,245,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; color: var(--rose); }
+  .brand svg { width: 26px; height: 26px; fill: currentColor; }
+
+  main { flex: 1; overflow-y: auto; padding: 20px 15px 80px; }
+  .view { display: none; animation: fadeIn 0.3s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .bottomnav {
+    position: absolute; bottom: 0; width: 100%; display: flex; 
+    justify-content: space-around; background: #FFFFFF;
+    border-top: 1px solid var(--line); padding: 10px 5px; z-index: 40;
+  }
+  .nav-btn {
+    background: none; border: none; color: var(--ink-dim); display: flex; 
+    flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; 
+    cursor: pointer; width: 20%; transition: color 0.2s;
+  }
+  .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none; }
+  .nav-btn.active { color: var(--rose); font-weight: bold; }
+  
+  /* عناصر الصفحة الرئيسية */
+  .center { text-align: center; }
+  .eyebrow {
+    display: inline-block; font-size: 0.75rem; color: var(--rose); 
+    border: 1px solid var(--rose-light); border-radius: 20px;
+    padding: 4px 12px; margin-bottom: 12px; background: #fff; font-weight: 600;
+  }
+  h1.hero-title { font-size: 1.9rem; margin: 0 0 10px; color: var(--ink); }
+  h1.hero-title span { color: var(--rose); }
+  .lead { color: var(--ink-dim); font-size: 0.9rem; margin: 0 0 20px; }
+
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quick-tile {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 15px; 
+    text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .quick-tile:hover { border-color: var(--rose); transform: translateY(-2px); background: var(--bg-soft); }
+  .quick-tile .ic { font-size: 1.6rem; margin-bottom: 4px; display: block; }
+  .quick-tile p { margin: 0; font-size: 0.85rem; font-weight: 500; }
+
+  /* الكروت والإحصائيات */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
+  .card.soft { background: var(--bg-soft); border-color: transparent; }
+  .stat-row { display: flex; gap: 10px; margin: 15px 0 10px; }
+  .stat-mini { flex: 1; text-align: center; background: rgba(255,255,255,0.6); padding: 8px; border-radius: 12px; }
+  .stat-mini .n { font-size: 1.3rem; color: var(--rose); font-weight: 700; }
+  .stat-mini p { font-size: 0.7rem; color: var(--ink-dim); margin: 2px 0 0; line-height: 1.3; }
+
+  /* أزرار وعناصر تفاعلية */
+  .btn { display: inline-block; padding: 12px 20px; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; font-size: 0.9rem; width: 100%; text-align: center; transition: background 0.2s; }
+  .btn-primary { background: var(--rose); color: #fff; }
+  .btn-primary:hover { background: #BE5A6A; }
+  .btn-soft { background: var(--lav); color: #fff; }
+  .btn-soft:hover { background: #765E8F; }
+  
+  /* شاشة المحادثة الشات */
+  .chat-log { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; max-height: 250px; overflow-y: auto; padding: 5px; }
+  .bubble { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 0.88rem; }
+  .bubble.user { align-self: flex-start; background: var(--bg-soft); border: 1px solid var(--line); }
+  .bubble.ai { align-self: flex-end; background: #EFE8F4; border: 1px solid var(--lav-light); }
+  .bubble .tag { font-size: 0.7rem; color: var(--lav); display: block; font-weight: bold; margin-bottom: 3px; }
+
+  .chat-input-row { display: flex; gap: 8px; }
+  .chat-input-row textarea { flex: 1; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 10px; font-size: 0.88rem; resize: none; height: 42px; }
+  .send-btn { background: var(--rose); border: none; color: white; border-radius: 12px; width: 42px; height: 42px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+
+  /* شاشة الاختبار */
+  .quiz-progress { display: flex; gap: 5px; margin-bottom: 15px; }
+  .quiz-progress span { flex: 1; height: 5px; border-radius: 4px; background: var(--line); }
+  .quiz-progress span.done { background: var(--rose); }
+  .quiz-card { display: none; } 
+  .quiz-card.active { display: block; }
+  .msg-bubble { background: var(--bg-soft); border-radius: 12px; padding: 12px; border: 1px solid var(--line); margin-bottom: 15px; font-size: 0.9rem; }
+  .msg-bubble .from { font-size: 0.75rem; color: var(--ink-dim); display: block; margin-bottom: 4px; font-weight: bold; }
+  .quiz-choices { display: flex; flex-direction: column; gap: 8px; }
+  .choice-btn { padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 0.85rem; text-align: right; transition: all 0.2s; }
+  .choice-btn:hover { border-color: var(--rose); background: var(--bg-soft); }
+  .feedback { margin-top: 10px; padding: 10px; border-radius: 10px; font-size: 0.82rem; display: none; font-weight: 500; }
+  .feedback.correct { background: #EAF2E6; border: 1px solid var(--sage); color: #4A6B3E; }
+  .feedback.wrong { background: #FCECE8; border: 1px solid var(--coral); color: #A64F3B; }
+
+  /* شاشة الإبلاغ والدليل */
+  .contact-strip { display: flex; gap: 8px; margin-bottom: 15px; }
+  .contact-pill { flex: 1; text-align: center; background: #fff; border: 1px solid var(--rose-light); border-radius: 12px; padding: 10px 5px; text-decoration: none; color: var(--ink); }
+  .contact-pill .n { color: var(--rose); font-size: 1.2rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .contact-pill p { margin: 2px 0 0; font-size: 0.7rem; color: var(--ink-dim); }
+  
+  .form-input { width: 100%; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 10px; font-size: 0.88rem; margin-bottom: 10px; }
+  .draft-box { background: #F3EEF7; border: 1px solid var(--lav-light); border-radius: 12px; padding: 12px; font-size: 0.85rem; margin-top: 10px; display: none; line-height: 1.5; color: #4A355A; }
+
+  .meter { height: 6px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 8px 0; }
+  .meter-fill { height: 100%; width: 0%; transition: width 0.3s; }
+  
+  .guide-item { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .guide-item:last-child { border-bottom: none; }
+  .guide-item .num { color: var(--rose); font-weight: 700; font-family: 'JetBrains Mono'; }
+  .guide-item h3 { margin: 0 0 2px; font-size: 0.9rem; font-family: 'IBM Plex Sans Arabic'; }
+  .guide-item p { margin: 0; color: var(--ink-dim); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>حِمى</span>
+    </div>
+  </div>
+
+  <main>
+    <section class="view active" id="view-home">
+      <div class="center">
+        <span class="eyebrow">مساحتكِ الرقمية الآمنة</span>
+        <h1 class="hero-title">حِمى، <span>رفيقتكِ</span> أونلاين</h1>
+        <p class="lead">حللي الرسائل المشبوهة، تدربي على كشف الخدع، وجهزي بلاغاً رسمياً للجهات الأمنية لحماية نفسكِ.</p>
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick-tile" onclick="goto('ai')"><span class="ic">💬</span><p>تحليل الرسائل</p></div>
+        <div class="quick-tile" onclick="goto('quiz')"><span class="ic">🎯</span><p>اختبار كشف الخدعة</p></div>
+        <div class="quick-tile" onclick="goto('report')"><span class="ic">🚨</span><p>بلاغ سريع وطوارئ</p></div>
+        <div class="quick-tile" onclick="goto('guide')"><span class="ic">🛡️</span><p>دليل الحماية</p></div>
+      </div>
+
+      <div class="card soft" style="margin-top: 15px;">
+        <h3 style="margin: 0 0 5px; font-size: 0.95rem;">لماذا تطبيق حِمى؟</h3>
+        <div class="stat-row">
+          <div class="stat-mini"><div class="n">43%</div><p>من الفتيات واجهن مضايقات رقمية</p></div>
+          <div class="stat-mini"><div class="n">108</div><p>رقم حماية الفتيات إلكترونياً</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-ai">
+      <h3 style="margin: 0 0 5px;">💬 المساعد الرقمي الذكي</h3>
+      <p style="font-size: 0.8rem; color: var(--ink-dim); margin-bottom: 15px;">الصقي هنا أي رسالة غريبة لحقتك، وسيقوم النظام بتحليلها فوراً وإرشادك.</p>
+      <div class="card">
+        <div class="chat-log" id="chatLog">
+          <div class="bubble ai"><span class="tag">حِمى</span>مرحباً بكِ! الصقي أي رسالة مشبوهة هنا وسأخبركِ برأيي الأمني فيها.</div>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chatInput" placeholder="اكتبي أو الصقي الرسالة هنا..."></textarea>
+          <button class="send-btn" onclick="analyzeLocalMessage()">↩</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-quiz">
+      <h3 style="margin: 0 0 5px;">🎯 اختبار كشف الخدع الرقمية</h3>
+      <p style="font-size: 0.8rem; color: var(--ink-dim); margin-bottom: 15px;">اقرئي المواقف الواقعية التالية وقرري بسرعة:</p>
+      <div class="card">
+        <div class="quiz-progress" id="quizProgress"><span></span><span></span><span></span></div>
+        
+        <div class="quiz-card active" data-answer="no">
+          <div class="msg-bubble"><span class="from">رسالة من مجهول على انستغرام</span>"ربحتي معانا هاتف آيفون مجاناً بمناسبة العام الجديد! أرسلي لنا اسمك الكامل ورقم هاتف والدك وكود تأكيد الحساب لتسجيل الجائزة فورا"</div>
+          <div class="quiz-choices">
+            <button class="choice-btn" onclick="checkQuiz(this, 'no')">🚨 رسالة احتيالية مشبوهة</button>
+            <button class="choice-btn" onclick="checkQuiz(this, 'yes')">✅ رسالة آمنة، سأرسل البيانات</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+
+        <div class="quiz-card" data-answer="no">
+          <div class="msg-bubble"><span class="from">حساب مجهول يهددك</span>"لقد قمت باختراق كاميرا هاتفك وصورتكِ، إذا لم ترسلي لي بطاقات تعبئة رصيد سأنشر الصور لأصدقائك في المدرسة."</div>
+          <div class="quiz-choices">
+            <button class="choice-btn" onclick="checkQuiz(this, 'no')">🚨 ابتزاز إلكتروني (لا أستجيب وأخبر عائلتي)</button>
+            <button class="choice-btn" onclick="checkQuiz(this, 'yes')">✅ سأرسل الرصيد لكي يسكت</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+
+        <div class="quiz-card" data-answer="yes">
+          <div class="msg-bubble"><span class="from">رسالة نصية من بريد الجزائر</span>"تم استقبال الطرد الخاص بك بنجاح، يرجى التقرب من مركز البريد القريب منك لاستلامه مصحوبة ببطاقة تعريفك."</div>
+          <div class="quiz-choices">
+            <button class="choice-btn" onclick="checkQuiz(this, 'yes')">✅ رسالة إدارية آمنة وطبيعية</button>
+            <button class="choice-btn" onclick="checkQuiz(this, 'no')">🚨 رسالة مشبوهة</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+
+        <div id="quizResult" style="display:none;" class="center">
+          <h4 style="color: var(--rose); margin: 10px 0;">أحسنتِ! لقد أكملتِ الاختبار بنجاح.</h4>
+          <p style="font-size: 0.82rem;">تذكري دائماً: عدم مشاركة الأكواد الشخصية والصور هو سر أمانكِ الرقمي.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-report">
+      <h3 style="margin: 0 0 5px;">🚨 أرقام النجدة والشكاوى الرسمية</h3>
+      <p style="font-size: 0.8rem; color: var(--ink-dim); margin-bottom: 15px;">يمكنك الاتصال مباشرة بالجهات المختصة في الجزائر عند التعرض لخطر:</p>
+      
+      <div class="contact-strip">
+        <a class="contact-pill" href="tel:17"><div class="n">17</div><p>الشرطة</p></a>
+        <a class="contact-pill" href="tel:1055"><div class="n">1055</div><p>الدرك الوطني</p></a>
+        <a class="contact-pill" href="tel:108"><div class="n">108</div><p>حماية الطفولة</p></a>
+      </div>
+
+      <div class="card">
+        <h4 style="margin: 0 0 8px; font-size: 0.85rem;">📝 مولّد البلاغات الآلي (نموذج محاكاة)</h4>
+        <p style="font-size: 0.78rem; color: var(--ink-dim); margin-bottom: 10px;">اكتبي باختصار واش صرالك وسيقوم التطبيق بصياغة بلاغ رسمي ومنظم لكِ:</p>
+        <textarea class="form-input" id="reportDesc" placeholder="مثال: شخص يهددني بنشر صوري إن لم أدفع له مالاً..." rows="2"></textarea>
+        <button class="btn btn-primary" onclick="generateLocalReport()">توليد نص البلاغ الرسمي</button>
+        <div class="draft-box" id="draftBox"></div>
+      </div>
+
+      <button class="btn btn-soft" onclick="sendWhatsAppAlert()">📣 إرسال رسالة نجدة سريعة للأهل عبر واتساب</button>
+    </section>
+
+    <section class="view" id="view-guide">
+      <h3 style="margin: 0 0 5px;">🛡️ دليل الأمان الذكي</h3>
+      
+      <div class="card">
+        <h4 style="margin: 0 0 5px; font-size: 0.85rem;">فحص قوة كلمة المرور الخاصة بكِ</h4>
+        <input type="text" class="form-input" id="pwInput" placeholder="جربي كتابة كلمة مرور افتراضية هنا لرؤية قوتها..." autocomplete="off">
+        <div class="meter"><div class="meter-fill" id="pwMeter"></div></div>
+        <div id="pwLabel" style="font-size: 0.78rem; color: var(--ink-dim);">في انتظار الإدخال...</div>
+      </div>
+
+      <div class="card">
+        <div class="guide-item"><span class="num">01</span><div><h3>تفعيل التحقق الثنائي (2FA)</h3><p>يفيدك جداً لحماية حسابك في انستغرام وفيسبوك من الاختراق حتى لو عرفوا كلمة السر.</p></div></div>
+        <div class="guide-item"><span class="num">02</span><div><h3>الحسابات الخاصة</h3><p>اجعلي حساباتكِ خاصة (Private) ولا تقبلي إلا الأشخاص الذين تعرفينهم حقيقة في المدرسة أو العائلة.</p></div></div>
+        <div class="guide-item"><span class="num">03</span><div><h3>الاحتفاظ بالأدلة</h3><p>إذا تعرضتِ لمضايقة، خذي لقطة شاشة (Screenshot) فوراً قبل حظر الشخص، فاللقطة دليل قانوني هام.</p></div></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottomnav">
+    <button class="nav-btn active" data-tab="home" onclick="goto('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>الرئيسية
+    </button>
+    <button class="nav-btn" data-tab="ai" onclick="goto('ai')">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>احكيلي
+    </button>
+    <button class="nav-btn" data-tab="quiz" onclick="goto('quiz')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg>الاختبار
+    </button>
+    <button class="nav-btn" data-tab="report" onclick="goto('report')">
+      <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>إبلاغ
+    </button>
+    <button class="nav-btn" data-tab="guide" onclick="goto('guide')"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>الدليل</button>
+  </nav>
+</div>
+
+<script>
+  // نظام التنقل بين الشاشات
+  function goto(tab){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+tab).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  }
+
+  // محاكاة الشات الذكي محلياً لتفادي أخطاء السيرفر والـ CORS
+  function analyzeLocalMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if(!text) return;
+
+    const log = document.getElementById('chatLog');
+    
+    // إضافة رسالة المستخدم
+    const userBubble = document.createElement('div');
+    userBubble.className = 'bubble user';
+    userBubble.textContent = text;
+    log.appendChild(userBubble);
+    
+    input.value = "";
+    
+    // إنشاء رد ذكي تلقائي حسب الكلمات المفتاحية بالدارجة والفصحى
+    let reply = "⚠️ رسالة مشبوهة! ننصحكِ بعدم الرد على الغرباء وعدم مشاركة أي كود شخصي يصلكِ في الهاتف.";
+    if(text.includes("ربحت") || text.includes("جائزة") || text.includes("آيفون") || text.includes("فزت")) {
+      reply = "🚨 خطر احتيال! هذه رسالة كاذبة ومنتشرة تهدف لسرقة معلوماتكِ الشخصية أو اختراق حسابكِ، احذري وتجاهليها فوراً.";
+    } else if(text.includes("صور") || text.includes("نشر") || text.includes("فيديو") || text.includes("فلوس") || text.includes("تهديد")) {
+      reply = "🚨 خطر ابتزاز إلكتروني حاد! لا تخافي ولا تستجيبي لطلباته ولا تدفعي شيئاً. قومي بأخذ لقطة شاشة كدليل، ثم احظريه، وأخبري عائلتكِ فوراً أو اتصلي بالرقم 108 أو الدرك 1055.";
+    } else if(text.includes("سلام") || text.includes("وينك") || text.includes("أهلا")) {
+      reply = "✅ تبدو رسالة عادية، ولكن إذا كانت من شخص مجهول تماماً، احرصي على عدم مشاركة أسراركِ أو تفاصيل حياتك اليومية مع الغرباء.";
+    }
+
+    // إضافة رد الذكاء الاصطناعي التخيلي بعد ثواني
+    setTimeout(() => {
+      const aiBubble = document.createElement('div');
+      aiBubble.className = 'bubble ai';
+      aiBubble.innerHTML = '<span class="tag">حِمى</span>' + reply;
+      log.appendChild(aiBubble);
+      log.scrollTop = log.scrollHeight;
+    }, 600);
+  }
+
+  // نظام لعبة الاختبار
+  let currentQuizIdx = 0;
+  function checkQuiz(btn, choice) {
+    const cards = document.querySelectorAll('.quiz-card');
+    const card = cards[currentQuizIdx];
+    const correct = card.dataset.answer;
+    const feedback = card.querySelector('.feedback');
+    const progressSpans = document.querySelectorAll('.quiz-progress span');
+
+    card.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    
+    feedback.style.display = "block";
+    if(choice === correct) {
+      feedback.className = "feedback correct";
+      feedback.textContent = "✓ إجابة ممتازة وذكية! أنتِ واعية بأساليب الأمان.";
+      progressSpans[currentQuizIdx].classList.add('done');
+    } else {
+      feedback.className = "feedback wrong";
+      feedback.textContent = "✗ انتبهي! هذا التصرف قد يعرض بياناتكِ للخطر. الأصح هو التبليغ والحذر.";
+    }
+
+    setTimeout(() => {
+      card.classList.remove('active');
+      currentQuizIdx++;
+      if(currentQuizIdx < cards.length) {
+        cards[currentQuizIdx].classList.add('active');
+      } else {
+        document.getElementById('quizResult').style.display = "block";
+      }
+    }, 2000);
+  }
+
+  // محاكاة صياغة بلاغ رسمي محلياً
+  function generateLocalReport() {
+    const desc = document.getElementById('reportDesc').value.trim();
+    const box = document.getElementById('draftBox');
+    if(!desc) { alert("يرجى كتابة تفاصيل الموقف أولاً."); return; }
+
+    box.style.display = "block";
+    box.textContent = `إلى السيد رئيس المصلحة المركزية لمكافحة الجرائم المعلوماتية،\n\nالموضوع: شكوى بخصوص تعرض تلميذة قاصر لمضايقة وتهديد رقمي أونلاين.\n\nنحيطكم علماً أن الضحية تعرضت للموقف التالي: "${desc}". نطلب من سيادتكم التدخل لفتح تحقيق وحظر الحساب المشبوه حماية للسلامة الرقمية للمتمدرسين.\n\nمقدم الشكوى: (تطبيق حِمى للأمان الرقمي)`;
+  }
+
+  // إرسال تنبيه واتساب للأهل
+  function sendWhatsAppAlert() {
+    const msg = "🌸 تنبيه من تطبيق حِمى: أنا أحتاج إلى مساعدة عاجلة بخصوص موقف غريب واجهته أونلاين، يرجى الاتصال بي فوراً.";
+    window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+  }
+
+  // أداة قياس قوة كلمة المرور
+  document.getElementById('pwInput').addEventListener('input', function() {
+    const val = this.value;
+    const fill = document.getElementById('pwMeter');
+    const label = document.getElementById('pwLabel');
+    
+    if(!val) { fill.style.width = '0%'; label.textContent = 'في انتظار الإدخال...'; return; }
+    
+    let score = 0;
+    if(val.length >= 6) score++;
+    if(val.length >= 10) score++;
+    if(/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+    if(/[0-9]/.test(val)) score++;
+    if(/[^A-Za-z0-9]/.test(val)) score++;
+
+    const pct = (score / 5) * 100;
+    fill.style.width = pct + '%';
+
+    if(score <= 2) { fill.style.background = '#E37B62'; label.textContent = 'الوضعية: ضعيفة جداً ❌ (أضيفي رموزاً وأرقاماً)'; }
+    else if(score <= 4) { fill.style.background = '#8A6FA5'; label.textContent = 'الوضعية: متوسطة ⚠️ (زيدي في طول الكلمة)'; }
+    else { fill.style.background = '#6B945E'; label.textContent = 'الوضعية: قوية جداً وحصينة ✅'; }
+  });
+</script>
+
+</body>
+</html>
